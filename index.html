@@ -15,6 +15,7 @@
             --gc-accent: #74c69d;
             --glow-green: rgba(82, 183, 136, 0.5);
             --glow-gold: rgba(255, 215, 0, 0.4);
+            --glow-orange: rgba(255, 140, 0, 0.5);
             --white: #ffffff;
         }
 
@@ -279,7 +280,7 @@
         .modal-content {
             background: linear-gradient(145deg, #1b4332 0%, #081c15 100%);
             border: 1px solid var(--gc-light-green);
-            padding: 30px 22px;
+            padding: 28px 22px;
             border-radius: 20px;
             text-align: center;
             box-shadow: 0 12px 40px rgba(0,0,0,0.8), 0 0 25px var(--glow-green);
@@ -296,7 +297,7 @@
         .modal h2 {
             color: #ffffff;
             font-size: 1.6rem;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             text-shadow: 0 0 10px var(--glow-green);
         }
 
@@ -308,8 +309,8 @@
         .code-container {
             background-color: rgba(4, 14, 10, 0.9);
             border: 1px dashed var(--gc-accent);
-            padding: 12px 16px;
-            margin: 20px 0;
+            padding: 10px 14px;
+            margin: 16px 0;
             border-radius: 12px;
             display: flex;
             justify-content: space-between;
@@ -345,13 +346,14 @@
             box-shadow: 0 0 12px var(--glow-green);
         }
 
+        /* Botón Certitude */
         .certitude-btn {
             display: inline-block;
             width: 100%;
             background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
             color: var(--white);
             text-decoration: none;
-            padding: 13px 0;
+            padding: 12px 0;
             border-radius: 25px;
             font-weight: bold;
             font-size: 0.95rem;
@@ -359,11 +361,35 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
             border: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 10px;
         }
 
         .certitude-btn:hover {
             background: linear-gradient(135deg, #1a8cff 0%, #0066cc 100%);
             box-shadow: 0 0 20px rgba(0, 123, 255, 0.7);
+            transform: translateY(-2px);
+        }
+
+        /* Botón Foto Spoiler */
+        .spoiler-btn {
+            display: inline-block;
+            width: 100%;
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            color: var(--white);
+            text-decoration: none;
+            padding: 12px 0;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(230, 126, 34, 0.4);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .spoiler-btn:hover {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            box-shadow: 0 0 20px var(--glow-orange);
             transform: translateY(-2px);
         }
 
@@ -434,6 +460,7 @@
             </div>
 
             <a href="https://www.certitudes.org/certitude?wp=GCBVTBN" target="_blank" class="certitude-btn" id="certitude-link">IR A CERTITUDE</a>
+            <a href="https://drive.google.com/file/d/1snRpXGoZUuYT_lplhHsiY7G8PmqpwbhP/view?usp=sharing" target="_blank" class="spoiler-btn" id="spoiler-link">FOTO SPOILER</a>
         </div>
     </div>
 
@@ -471,8 +498,8 @@
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(523.25, now); // C5
-            osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+            osc.frequency.setValueAtTime(523.25, now);
+            osc.frequency.setValueAtTime(659.25, now + 0.1);
             gain.gain.setValueAtTime(0.2, now);
             gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
             osc.connect(gain);
@@ -499,7 +526,7 @@
 
         function playWinSound() {
             if (!audioCtx) return;
-            const notes = [261.63, 329.63, 392.00, 523.25, 659.25]; // C4, E4, G4, C5, E5
+            const notes = [261.63, 329.63, 392.00, 523.25, 659.25];
             const now = audioCtx.currentTime;
             notes.forEach((freq, idx) => {
                 const osc = audioCtx.createOscillator();
@@ -517,12 +544,12 @@
 
         /* --- LÓGICA DEL JUEGO --- */
         const translations = {
-            es: { title: "EL TORO DE OSBORNE", congrats: "¡Enhorabuena!", msg: "Has resuelto el juego.", copy: "Copiar", copied: "¡Copiado!", cert: "IR A CERTITUDE" },
-            en: { title: "EL TORO DE OSBORNE", congrats: "Congratulations!", msg: "You found all the pairs.", copy: "Copy", copied: "Copied!", cert: "GO TO CERTITUDE" },
-            fr: { title: "EL TORO DE OSBORNE", congrats: "Félicitations!", msg: "Vous avez trouvé toutes les paires.", copy: "Copier", copied: "Copié!", cert: "ALLER À CERTITUDE" },
-            pt: { title: "EL TORO DE OSBORNE", congrats: "Parabéns!", msg: "Encontrou todos os pares.", copy: "Copiar", copied: "Copiado!", cert: "IR PARA CERTITUDE" },
-            de: { title: "EL TORO DE OSBORNE", congrats: "Glückwunsch!", msg: "Du hast alle Paare gefunden.", copy: "Kopieren", copied: "Kopiert!", cert: "ZUR CERTITUDE" },
-            it: { title: "EL TORO DE OSBORNE", congrats: "Congratulazioni!", msg: "Hai trovato tutte le coppie.", copy: "Copia", copied: "Copiato!", cert: "VAI A CERTITUDE" }
+            es: { title: "EL TORO DE OSBORNE", congrats: "¡Enhorabuena!", msg: "Has resuelto el juego.", copy: "Copiar", copied: "¡Copiado!", cert: "IR A CERTITUDE", spoiler: "FOTO SPOILER" },
+            en: { title: "EL TORO DE OSBORNE", congrats: "Congratulations!", msg: "You found all the pairs.", copy: "Copy", copied: "Copied!", cert: "GO TO CERTITUDE", spoiler: "SPOILER PHOTO" },
+            fr: { title: "EL TORO DE OSBORNE", congrats: "Félicitations!", msg: "Vous avez trouvé toutes les paires.", copy: "Copier", copied: "Copié!", cert: "ALLER À CERTITUDE", spoiler: "PHOTO SPOILER" },
+            pt: { title: "EL TORO DE OSBORNE", congrats: "Parabéns!", msg: "Encontrou todos os pares.", copy: "Copiar", copied: "Copiado!", cert: "IR PARA CERTITUDE", spoiler: "FOTO SPOILER" },
+            de: { title: "EL TORO DE OSBORNE", congrats: "Glückwunsch!", msg: "Du hast alle Paare gefunden.", copy: "Kopieren", copied: "Kopiert!", cert: "ZUR CERTITUDE", spoiler: "SPOILER-FOTO" },
+            it: { title: "EL TORO DE OSBORNE", congrats: "Congratulazioni!", msg: "Hai trovato tutte le coppie.", copy: "Copia", copied: "Copiato!", cert: "VAI A CERTITUDE", spoiler: "FOTO SPOILER" }
         };
 
         const frontImages = [
@@ -554,7 +581,7 @@
         }
 
         function startGame(lang) {
-            initAudio(); // Inicializa el motor de audio con la primera interacción del usuario
+            initAudio();
             currentLang = lang;
             document.getElementById('language-selector').style.display = 'none';
             document.getElementById('game-container').style.display = 'flex';
@@ -564,6 +591,7 @@
             document.getElementById('modal-message').innerText = translations[lang].msg;
             document.getElementById('copy-button').innerText = translations[lang].copy;
             document.getElementById('certitude-link').innerText = translations[lang].cert;
+            document.getElementById('spoiler-link').innerText = translations[lang].spoiler;
 
             setupBoard();
         }
