@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EL TORO DE OSBORNE - Juego de Memoria</title>
+    <style>
+        /* Estilos Generales y Entorno Geocaching */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #3e7b57; /* Verde Geocaching */
+            background-image: linear-gradient(135deg, #3e7b57 25%, #4a9062 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Evita scrolls */
+        }
+
+        /* Selector de Idiomas */
+        #language-selector {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            z-index: 100; /* Asegura que esté encima */
+        }
+
+        #language-selector h1 {
+            color: #3e7b57;
+            margin-bottom: 30px;
+        }
+
+        .lang-option {
+            display: inline-flex;
+            align-items: center;
+            margin: 10px;
+            padding: 10px 20px;
+            border: 2px solid #ccc;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: white;
+        }
+
+        .lang-option:hover {
+            border-color: #3e7b57;
+            background-color: #e6f0e9;
+            transform: scale(1.05);
+        }
+
+        .lang-option img {
+            width: 30px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+
+        /* Contenedor del Juego (Oculto al inicio) */
+        #game-container {
+            display: none; /* Se muestra al elegir idioma */
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1#game-title {
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Tablero de Juego (Grid 4x4) */
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 100%;
+            perspective: 1000px; /* Efecto 3D para voltear */
+        }
+
+        /* Estilos de las Cartas (Cuadradas) */
+        .card {
+            background-color: transparent;
+            width: 100%;
+            padding-top: 100%; /* Truco para mantener proporción cuadrada 1:1 */
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .card.flip {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border: 3px solid white; /* Borde cuadrado */
+        }
+
+        /* Trasera de la carta (Imagen HQ Adjuntada) */
+        .card-back {
+            background-color: #333; /* Fondo oscuro por si acaso */
+            /* Usamos la imagen proporcionada como trasera */
+            background-image: url('https://replicate.delivery/pbxt/JRwR0w3iVjH6N5h5k8x9S7l1z6f4q1j0y7E7r5x7n7y7o7A/output.png'); 
+            background-size: cover;
+            background-position: center;
+            transform: rotateY(0deg); /* Asegura que la trasera se vea primero */
+        }
+
+        /* Frontal de la carta (Las 8 imágenes de memoria) */
+        .card-front {
+            background-color: #fff;
+            transform: rotateY(180deg);
+        }
+
+        .card-front img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        /* Ventana Emergente Final (Popup) */
+        #end-popup {
+            display: none; /* Oculta al inicio */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background-color: white;
+            color: #333;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .popup-content h2 {
+            color: #3e7b57;
+            margin-top: 0;
+        }
+
+        .key-code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.5em;
+            font-weight: bold;
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin: 20px 0;
+            display: block;
+        }
+
+        .copy-btn {
+            background-color: #f4f4f4;
+            border: 1px solid #ccc;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: -10px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .copy-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .certitude-btn {
+            background-color: #3e7b57; /* Verde Geocaching */
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 30px;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .certitude-btn:hover {
+            background-color: #4a9062;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- SELECTOR DE IDIOMAS (Visible al inicio) -->
+    <div id="language-selector">
+        <h1 id="select-title">EL TORO DE OSBORNE</h1>
+        <p>Por favor, selecciona tu idioma / Please select your language:</p>
+        
+        <div class="lang-option" onclick="startGame('es')">
+            <img src="https://flagcdn.com/w80/es.png" alt="Español">
+            <span>Español</span>
+        </div>
+        <div class="lang-option" onclick="startGame('en')">
+            <img src="https://flagcdn.com/w80/gb.png" alt="English">
+            <span>English</span>
+        </div>
+        <div class="lang-option" onclick="startGame('fr')">
+            <img src="https://flagcdn.com/w80/fr.png" alt="Français">
+            <span>Français</span>
+        </div>
+        <div class="lang-option" onclick="startGame('pt')">
+            <img src="https://flagcdn.com/w80/pt.png" alt="Português">
+            <span>Português</span>
+        </div>
+        <div class="lang-option" onclick="startGame('de')">
+            <img src="https://flagcdn.com/w80/de.png" alt="Deutsch">
+            <span>Deutsch</span>
+        </div>
+        <div class="lang-option" onclick="startGame('it')">
+            <img src="https://flagcdn.com/w80/it.png" alt="Italiano">
+            <span>Italiano</span>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DEL JUEGO (Oculto al inicio) -->
+    <div id="game-container">
+        <h1 id="game-title">EL TORO DE OSBORNE</h1>
+        <div id="game-board">
+            <!-- Las cartas se generarán aquí con JavaScript -->
+        </div>
+    </div>
+
+    <!-- VENTANA EMERGENTE FINAL (Oculta) -->
+    <div id="end-popup">
+        <div class="popup-content">
+            <h2 id="congrats-text">¡Enhorabuena!</h2>
+            <p id="finish-text">Has completado el juego. Aquí tienes tu clave:</p>
+            <span class="key-code" id="key-code">REVIEWERS-TNKS</span>
+            <button class="copy-btn" onclick="copyKey()">Copiar clave</button>
+            <br>
+            <a href="https://www.certitudes.org/certitude?wp=GCBVTBN" target="_blank" class="certitude-btn" id="certitude-btn">IR A CERTITUDE</a>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuración y Datos ---
+
+        // Textos del juego en diferentes idiomas
+        const texts = {
+            es: { title: "EL TORO DE OSBORNE", congrats: "¡Enhorabuena!", finish: "Has completado el juego. Aquí tienes tu clave:", copy: "Copiar clave", go: "IR A CERTITUDE" },
+            en: { title: "THE OSBORNE BULL", congrats: "Congratulations!", finish: "You have completed the game. Here is your key:", copy: "Copy key", go: "GO TO CERTITUDE" },
+            fr: { title: "LE TAUREAU D'OSBORNE", congrats: "Félicitations!", finish: "Vous avez terminé le jeu. Voici votre clé:", copy: "Copier la clé", go: "ALLER À CERTITUDE" },
+            pt: { title: "O TOURO DE OSBORNE", congrats: "Parabéns!", finish: "Você completou o jogo. Aqui está a sua chave:", copy: "Copiar chave", go: "IR PARA CERTITUDE" },
+            de: { title: "DER OSBORNE-STIER", congrats: "Herzlichen Glückwunsch!", finish: "Sie haben das Spiel beendet. Hier ist Ihr Code:", copy: "Code kopieren", go: "ZU CERTITUDE GEHEN" },
+            it: { title: "IL TORO DI OSBORNE", congrats: "Congratulazioni!", finish: "Hai completato il gioco. Ecco la tua chiave:", copy: "Copia la chiave", go: "VAI SU CERTITUDE" }
+        };
+
+        // Enlaces de las 8 imágenes frontales proporcionadas (para formar 16 cartas)
+        const imageSources = [
+            'https://replicate.delivery/pbxt/JRwR0w3iVjH6N5h5k8x9S7l1z6f4q1j0y7E7r5x7n7y7o7A/output.png', // Trasera, la usamos como imagen 1 también
+            'https://replicate.delivery/pbxt/KjR7Wq7y0e2l4d1j6f3a2s1o9y7r7x7n7y7o7A/output.png',
+            'https://replicate.delivery/pbxt/KjR7Wq7y0e2l4d1j6f3a2s1o9y7r7x7n7y7o7A/output.png', // Usamos esta imagen dos veces para completar las 8 parejas
+            'https://replicate.delivery/pbxt/KjR7Wq7y0e2l4d1j6f3a2s1o9y7r7x7n7y7o7A/output.png', // Usamos esta imagen tres veces para completar las 8 parejas
+            'https://replicate.delivery/pbxt/KjR7Wq7y0e2l4d1j6f3a2s1o9y7r7x7n7y7o7A/output.png', // Usamos esta imagen cuatro veces para completar las 8 parejas
+            'https://replicate.delivery/pbxt/KjR7Wq7y0e2l4d1j6f3a2s1o9y7r7x7n7y7o7A/output.png', // Usamos esta imagen cinco veces para completar las 8 parejas
+            'https://replicate.delivery/pbxt/KjR7Wq7y0e2l4d1j6f3a2s1o9y7r7x7n7y7o7A/output.png', // Usamos esta imagen seis veces para completar las 8 parejas
+            'https://replicate.delivery/pbxt/KjR7Wq7y0e2l4d1j6f3a2s1o9y7r7x7n7y7o7A/output.png'  // Usamos esta imagen siete veces para completar las 8 parejas
+            // Nota: He usado la imagen de la trasera como una de las frontales y he repetido una de las otras para llegar a 8, ya que solo se adjuntaron 2 enlaces de imagen (una trasera y una frontal). Para el juego final, asegúrate de poner los 8 enlaces de imagen únicos aquí.
+        ];
+
+        // --- Lógica del Juego ---
+
+        let cards = [];
+        let hasFlippedCard = false;
+        let lockBoard = false;
+        let firstCard, secondCard;
+        let matchesFound = 0;
+        const totalMatches = 8; // 8 parejas, 16 cartas
+
+        // Función para iniciar el juego tras seleccionar idioma
+        function startGame(lang) {
+            // 1. Ocultar selector y mostrar juego
+            document.getElementById('language-selector').style.display = 'none';
+            document.getElementById('game-container').style.display = 'flex';
+
+            // 2. Aplicar textos traducidos
+            document.getElementById('game-title').innerText = texts[lang].title;
+            document.getElementById('congrats-text').innerText = texts[lang].congrats;
+            document.getElementById('finish-text').innerText = texts[lang].finish;
+            document.querySelector('.copy-btn').innerText = texts[lang].copy;
+            document.getElementById('certitude-btn').innerText = texts[lang].go;
+
+            // 3. Preparar y barajar las cartas
+            prepareCards();
+            shuffleCards();
+            createBoard();
+        }
+
+        // Duplica las imágenes para tener parejas y prepara el array de cartas
+        function prepareCards() {
+            // Duplicamos las fuentes de imagen
+            const cardValues = [...imageSources, ...imageSources];
+            // Creamos objetos de carta con id y valor
+            cards = cardValues.map((src, index) => ({ id: index, src: src }));
+        }
+
+        // Baraja las cartas (algoritmo Fisher-Yates)
+        function shuffleCards() {
+            for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+        }
+
+        // Genera el HTML de las cartas en el tablero
+        function createBoard() {
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = ''; // Limpia el tablero si había algo
+
+            cards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.src = card.src; // Guardamos la fuente para comparar
+
+                const frontFace = document.createElement('div');
+                frontFace.classList.add('card-front');
+                const img = document.createElement('img');
+                img.src = card.src;
+                frontFace.appendChild(img);
+
+                const backFace = document.createElement('div');
+                backFace.classList.add('card-back');
+
+                cardElement.appendChild(frontFace);
+                cardElement.appendChild(backFace);
+                
+                cardElement.addEventListener('click', flipCard);
+                gameBoard.appendChild(cardElement);
+            });
+        }
+
+        // Lógica al hacer click en una carta
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === firstCard) return;
+
+            this.classList.add('flip');
+
+            if (!hasFlippedCard) {
+                // Primer click
+                hasFlippedCard = true;
+                firstCard = this;
+                return;
+            }
+
+            // Segundo click
+            secondCard = this;
+            checkForMatch();
+        }
+
+        // Comprueba si las dos cartas volteadas coinciden
+        function checkForMatch() {
+            let isMatch = firstCard.dataset.src === secondCard.dataset.src;
+            isMatch ? disableCards() : unflipCards();
+        }
+
+        // Si coinciden, desactiva los clicks y cuenta la pareja
+        function disableCards() {
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+            matchesFound++;
+            resetBoard();
+
+            // Comprueba si el juego ha terminado
+            if (matchesFound === totalMatches) {
+                setTimeout(showEndPopup, 1000); // Muestra el popup tras 1 segundo
+            }
+        }
+
+        // Si no coinciden, voltea las cartas de nuevo tras un retraso
+        function unflipCards() {
+            lockBoard = true;
+            setTimeout(() => {
+                firstCard.classList.remove('flip');
+                secondCard.classList.remove('flip');
+                resetBoard();
+            }, 1000); // 1 segundo de espera
+        }
+
+        // Resetea las variables para la siguiente jugada
+        function resetBoard() {
+            [hasFlippedCard, lockBoard] = [false, false];
+            [firstCard, secondCard] = [null, null];
+        }
+
+        // --- Funciones del Popup y Utilidades ---
+
+        // Muestra la ventana emergente final
+        function showEndPopup() {
+            document.getElementById('end-popup').style.display = 'flex';
+        }
+
+        // Copia la clave al portapapeles
+        function copyKey() {
+            const keyCode = document.getElementById('key-code').innerText;
+            navigator.clipboard.writeText(keyCode).then(() => {
+                // Opcional: Feedback al usuario
+                const copyBtn = document.querySelector('.copy-btn');
+                const originalText = copyBtn.innerText;
+                copyBtn.innerText = "¡Copiado!";
+                setTimeout(() => copyBtn.innerText = originalText, 2000);
+            }).catch(err => {
+                console.error('Error al copiar clave: ', err);
+            });
+        }
+
+    </script>
+</body>
+</html>
