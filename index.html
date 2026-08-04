@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EL TORO DE OSBORNE - Juego de Memoria</title>
     <style>
-        /* --- ESTILOS GLOBALES & NORMAS AUTOAJUSTE --- */
+        /* --- ESCALA DE VERDES GEOCACHING --- */
         :root {
+            --gc-dark-bg: #081c15;
+            --gc-bg-gradient: linear-gradient(135deg, #1b4332 0%, #081c15 100%);
+            --gc-card-bg: #2d6a4f;
             --gc-green: #028741;
-            --gc-dark-green: #016631;
-            --bg-color: #e8f5e9;
+            --gc-light-green: #52b788;
+            --gc-accent: #74c69d;
             --white: #ffffff;
         }
 
@@ -23,11 +26,11 @@
         html, body {
             width: 100vw;
             height: 100vh;
-            height: 100dvh; /* Para móviles modernos (dynamic viewport height) */
-            overflow: hidden; /* Prohibido el scroll */
+            height: 100dvh;
+            overflow: hidden; /* Sin scroll */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: #333;
+            background: var(--gc-bg-gradient);
+            color: var(--white);
         }
 
         /* --- SELECTOR DE IDIOMAS --- */
@@ -41,16 +44,18 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: var(--white);
+            background: var(--gc-bg-gradient);
             z-index: 1000;
             padding: 20px;
         }
 
         #language-selector h2 {
-            color: var(--gc-green);
+            color: var(--gc-accent);
             margin-bottom: 25px;
-            font-size: clamp(1.4rem, 4vw, 2rem);
+            font-size: clamp(1.4rem, 4vw, 2.2rem);
             text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            letter-spacing: 1px;
         }
 
         .lang-options {
@@ -66,17 +71,19 @@
             flex-direction: column;
             align-items: center;
             padding: 12px 8px;
-            border: 2px solid #e0e0e0;
+            border: 2px solid var(--gc-card-bg);
             border-radius: 12px;
-            background: #fafafa;
+            background: rgba(45, 106, 79, 0.4);
             cursor: pointer;
             transition: all 0.25s ease;
+            backdrop-filter: blur(5px);
         }
 
         .lang-btn:hover {
-            border-color: var(--gc-green);
-            background-color: #f0fdf4;
-            transform: translateY(-2px);
+            border-color: var(--gc-light-green);
+            background: var(--gc-card-bg);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         .lang-btn img {
@@ -85,18 +92,18 @@
             object-fit: cover;
             border-radius: 4px;
             margin-bottom: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
 
         .lang-btn span {
             font-size: clamp(0.8rem, 2.5vw, 0.95rem);
             font-weight: bold;
-            color: #333;
+            color: var(--white);
         }
 
         /* --- CONTENEDOR PRINCIPAL DEL JUEGO --- */
         #game-container {
-            display: none; /* Oculto inicialmente */
+            display: none;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
@@ -106,21 +113,21 @@
         }
 
         h1 {
-            color: var(--gc-green);
+            color: var(--gc-accent);
             font-size: clamp(1.2rem, 3.5vw, 1.8rem);
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             text-align: center;
             margin-top: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
         }
 
-        /* --- TABLERO DINÁMICO QUE NUNCA HACE SCROLL --- */
+        /* --- TABLERO DINÁMICO AUTOAJUSTABLE --- */
         #game-board {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(4, 1fr);
             gap: clamp(6px, 1.2vw, 12px);
-            /* Fuerza que el tablero sea cuadrado y se ajuste al espacio vertical/horizontal disponible */
             width: min(85vw, 58vh);
             height: min(85vw, 58vh);
             perspective: 1000px;
@@ -144,20 +151,20 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            border-radius: 8px;
+            border-radius: 10px;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
             overflow: hidden;
-            background-color: var(--white);
+            border: 2px solid var(--gc-card-bg);
         }
 
         /* Trasera con HQ.png */
         .card-back {
-            background-color: var(--gc-green);
+            background-color: var(--gc-dark-bg);
         }
 
         .card-back img {
@@ -166,9 +173,10 @@
             object-fit: cover;
         }
 
-        /* Frente con las parejas */
+        /* Frente con la pareja */
         .card-front {
             transform: rotateY(180deg);
+            background-color: #ffffff;
             padding: 6px;
         }
 
@@ -178,17 +186,17 @@
             object-fit: contain;
         }
 
-        /* --- FIRMA AJUSTADA (1/3 CADA TEXTO, CENTRADOS EN SU BLOQUE) --- */
+        /* --- FIRMA AJUSTADA (1/3) --- */
         .footer-signature {
             width: 100%;
-            max-width: 600px; /* Evita dispersión exagerada en pantallas panorámicas */
+            max-width: 600px;
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             align-items: center;
             padding: 8px 0;
             font-size: clamp(0.85rem, 2.5vw, 1rem);
             font-weight: 700;
-            color: var(--gc-dark-green);
+            color: var(--gc-accent);
             letter-spacing: 0.5px;
         }
 
@@ -202,7 +210,7 @@
             text-align: center;
         }
 
-        /* --- VENTANA EMERGENTE (MODAL FINAL) --- */
+        /* --- VENTANA EMERGENTE (MODAL) --- */
         .modal {
             display: none;
             position: fixed;
@@ -211,18 +219,19 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.7);
+            background-color: rgba(0, 0, 0, 0.8);
             justify-content: center;
             align-items: center;
             padding: 15px;
         }
 
         .modal-content {
-            background-color: var(--white);
+            background: var(--gc-bg-gradient);
+            border: 2px solid var(--gc-light-green);
             padding: 25px 20px;
             border-radius: 16px;
             text-align: center;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.7);
             max-width: 380px;
             width: 100%;
             animation: modalFadeIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -234,19 +243,19 @@
         }
 
         .modal h2 {
-            color: var(--gc-green);
+            color: var(--gc-accent);
             font-size: 1.5rem;
             margin-bottom: 8px;
         }
 
         .modal p {
             font-size: 0.95rem;
-            color: #555;
+            color: #d8f3dc;
         }
 
         .code-container {
-            background-color: #f4f4f4;
-            border: 2px dashed var(--gc-green);
+            background-color: rgba(8, 28, 21, 0.8);
+            border: 2px dashed var(--gc-light-green);
             padding: 10px 14px;
             margin: 18px 0;
             border-radius: 8px;
@@ -259,7 +268,7 @@
             font-family: 'Courier New', Courier, monospace;
             font-size: 1.15rem;
             font-weight: bold;
-            color: #222;
+            color: #ffffff;
         }
 
         .copy-btn {
@@ -275,7 +284,7 @@
         }
 
         .copy-btn:hover {
-            background-color: var(--gc-dark-green);
+            background-color: var(--gc-light-green);
         }
 
         .certitude-btn {
@@ -289,16 +298,15 @@
             font-weight: bold;
             font-size: 0.95rem;
             transition: background-color 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
         .certitude-btn:hover {
             background-color: #0056b3;
         }
 
-        /* Adaptación para pantallas extremadamente pequeñas */
         @media (max-width: 360px) {
             .lang-options { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .modal-content { padding: 20px 15px; }
         }
     </style>
 </head>
@@ -341,7 +349,7 @@
         
         <div id="game-board"></div>
 
-        <!-- FIRMA REAJUSTADA CON DISTRIBUCIÓN 1/3 -->
+        <!-- FIRMA REAJUSTADA (1/3) -->
         <footer class="footer-signature">
             <div class="sig-left">GeoPaterna</div>
             <div class="sig-right">fran_giga</div>
@@ -364,7 +372,6 @@
     </div>
 
     <script>
-        // Traducciones
         const translations = {
             es: { title: "EL TORO DE OSBORNE", congrats: "¡Enhorabuena!", msg: "Has resuelto el juego.", copy: "Copiar", copied: "¡Copiado!", cert: "IR A CERTITUDE" },
             en: { title: "EL TORO DE OSBORNE", congrats: "Congratulations!", msg: "You found all the pairs.", copy: "Copy", copied: "Copied!", cert: "GO TO CERTITUDE" },
@@ -374,7 +381,7 @@
             it: { title: "EL TORO DE OSBORNE", congrats: "Congratulazioni!", msg: "Hai trovato tutte le coppie.", copy: "Copia", copied: "Copiato!", cert: "VAI A CERTITUDE" }
         };
 
-        // Las 8 imágenes frontales
+        // Nombres de las imágenes tal cual están guardadas en la raíz del repositorio
         const frontImages = [
             'Alaguait.png',
             'Clocker.jpg',
@@ -386,7 +393,6 @@
             'Sispoglo.jpg'
         ];
 
-        // Imagen trasera única (HQ)
         const backImage = 'HQ.png';
 
         let cardData = [...frontImages, ...frontImages];
@@ -432,7 +438,7 @@
                 const cardBack = document.createElement('div');
                 cardBack.classList.add('card-face', 'card-back');
                 const backImg = document.createElement('img');
-                backImg.src = backImage;
+                backImg.src = './' + backImage;
                 backImg.alt = "Trasera";
                 cardBack.appendChild(backImg);
 
@@ -440,7 +446,7 @@
                 const cardFront = document.createElement('div');
                 cardFront.classList.add('card-face', 'card-front');
                 const frontImg = document.createElement('img');
-                frontImg.src = imgSrc;
+                frontImg.src = './' + imgSrc;
                 frontImg.alt = "Carta";
                 cardFront.appendChild(frontImg);
 
@@ -506,7 +512,7 @@
             
             navigator.clipboard.writeText(codeText).then(() => {
                 btn.innerText = translations[currentLang].copied;
-                btn.style.backgroundColor = 'var(--gc-dark-green)';
+                btn.style.backgroundColor = 'var(--gc-light-green)';
                 setTimeout(() => {
                     btn.innerText = translations[currentLang].copy;
                     btn.style.backgroundColor = 'var(--gc-green)';
