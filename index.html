@@ -5,14 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EL TORO DE OSBORNE - Juego de Memoria</title>
     <style>
-        /* --- ESCALA DE VERDES GEOCACHING --- */
+        /* --- PALETA DE COLOR Y GLOW MODERNO --- */
         :root {
-            --gc-dark-bg: #081c15;
-            --gc-bg-gradient: linear-gradient(135deg, #1b4332 0%, #081c15 100%);
-            --gc-card-bg: #2d6a4f;
+            --gc-dark-bg: #061710;
+            --gc-bg-gradient: radial-gradient(circle at 50% 30%, #1b4332 0%, #081c15 70%, #040e0a 100%);
+            --gc-card-bg: rgba(45, 106, 79, 0.45);
             --gc-green: #028741;
             --gc-light-green: #52b788;
             --gc-accent: #74c69d;
+            --glow-green: rgba(82, 183, 136, 0.5);
+            --glow-gold: rgba(255, 215, 0, 0.4);
             --white: #ffffff;
         }
 
@@ -27,8 +29,8 @@
             width: 100vw;
             height: 100vh;
             height: 100dvh;
-            overflow: hidden; /* Sin scroll */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: var(--gc-bg-gradient);
             color: var(--white);
         }
@@ -51,57 +53,78 @@
 
         #language-selector h2 {
             color: var(--gc-accent);
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             font-size: clamp(1.4rem, 4vw, 2.2rem);
             text-align: center;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            letter-spacing: 1px;
+            text-shadow: 0 0 15px var(--glow-green), 0 2px 4px rgba(0,0,0,0.8);
+            letter-spacing: 2px;
         }
 
         .lang-options {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            max-width: 500px;
+            gap: 16px;
+            max-width: 520px;
             width: 100%;
         }
 
+        /* Botón con efecto de iluminación perimetral */
         .lang-btn {
+            position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 12px 8px;
-            border: 2px solid var(--gc-card-bg);
-            border-radius: 12px;
-            background: rgba(45, 106, 79, 0.4);
+            padding: 14px 10px;
+            border: 1px solid rgba(82, 183, 136, 0.3);
+            border-radius: 16px;
+            background: rgba(20, 50, 35, 0.5);
             cursor: pointer;
-            transition: all 0.25s ease;
-            backdrop-filter: blur(5px);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+
+        /* Especular suave (destello vertical al pasar el ratón) */
+        .lang-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .lang-btn:hover::before {
+            left: 150%;
         }
 
         .lang-btn:hover {
             border-color: var(--gc-light-green);
-            background: var(--gc-card-bg);
-            transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            background: rgba(45, 106, 79, 0.75);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(2, 135, 65, 0.4), 0 0 15px var(--glow-green);
         }
 
         .lang-btn img {
-            width: 45px;
-            height: 30px;
+            width: 48px;
+            height: 32px;
             object-fit: cover;
-            border-radius: 4px;
+            border-radius: 6px;
             margin-bottom: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.5);
         }
 
         .lang-btn span {
             font-size: clamp(0.8rem, 2.5vw, 0.95rem);
-            font-weight: bold;
-            color: var(--white);
+            font-weight: 600;
+            color: #e0f2fe;
+            letter-spacing: 0.5px;
         }
 
-        /* --- CONTENEDOR PRINCIPAL DEL JUEGO --- */
+        /* --- CONTENEDOR PRINCIPAL --- */
         #game-container {
             display: none;
             flex-direction: column;
@@ -116,20 +139,20 @@
             color: var(--gc-accent);
             font-size: clamp(1.2rem, 3.5vw, 1.8rem);
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             text-align: center;
             margin-top: 5px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+            text-shadow: 0 0 12px var(--glow-green), 0 2px 4px rgba(0,0,0,0.8);
         }
 
-        /* --- TABLERO DINÁMICO AUTOAJUSTABLE --- */
+        /* --- TABLERO DINÁMICO --- */
         #game-board {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(4, 1fr);
-            gap: clamp(6px, 1.2vw, 12px);
-            width: min(85vw, 58vh);
-            height: min(85vw, 58vh);
+            gap: clamp(8px, 1.5vw, 14px);
+            width: min(85vw, 56vh);
+            height: min(85vw, 56vh);
             perspective: 1000px;
             margin: auto 0;
         }
@@ -141,6 +164,11 @@
             transform-style: preserve-3d;
             transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1);
             cursor: pointer;
+            border-radius: 12px;
+        }
+
+        .card:hover {
+            box-shadow: 0 0 15px var(--glow-green);
         }
 
         .card.flip {
@@ -151,15 +179,15 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            border-radius: 10px;
+            border-radius: 12px;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
             overflow: hidden;
-            border: 2px solid var(--gc-card-bg);
+            border: 1px solid rgba(82, 183, 136, 0.3);
         }
 
         /* Trasera con HQ.png */
@@ -173,7 +201,7 @@
             object-fit: cover;
         }
 
-        /* Frente con la pareja */
+        /* Frente */
         .card-front {
             transform: rotateY(180deg);
             background-color: #ffffff;
@@ -186,7 +214,19 @@
             object-fit: contain;
         }
 
-        /* --- FIRMA AJUSTADA (1/3) --- */
+        .img-fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--gc-dark-bg);
+            word-break: break-all;
+            padding: 4px;
+        }
+
+        /* --- FIRMA CON ENLACES --- */
         .footer-signature {
             width: 100%;
             max-width: 600px;
@@ -196,8 +236,22 @@
             padding: 8px 0;
             font-size: clamp(0.85rem, 2.5vw, 1rem);
             font-weight: 700;
-            color: var(--gc-accent);
             letter-spacing: 0.5px;
+        }
+
+        .sig-link {
+            color: var(--gc-accent);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .sig-link:hover {
+            color: #ffffff;
+            text-shadow: 0 0 8px var(--gc-light-green);
+            transform: translateY(-2px);
         }
 
         .sig-left {
@@ -210,7 +264,7 @@
             text-align: center;
         }
 
-        /* --- VENTANA EMERGENTE (MODAL) --- */
+        /* --- VENTANA EMERGENTE (MODAL REFINADO) --- */
         .modal {
             display: none;
             position: fixed;
@@ -219,33 +273,35 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(4, 14, 10, 0.85);
+            backdrop-filter: blur(8px);
             justify-content: center;
             align-items: center;
             padding: 15px;
         }
 
         .modal-content {
-            background: var(--gc-bg-gradient);
-            border: 2px solid var(--gc-light-green);
-            padding: 25px 20px;
-            border-radius: 16px;
+            background: linear-gradient(145deg, #1b4332 0%, #081c15 100%);
+            border: 1px solid var(--gc-light-green);
+            padding: 30px 22px;
+            border-radius: 20px;
             text-align: center;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.7);
-            max-width: 380px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.8), 0 0 25px var(--glow-green);
+            max-width: 390px;
             width: 100%;
             animation: modalFadeIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         @keyframes modalFadeIn {
-            from { opacity: 0; transform: scale(0.85); }
-            to { opacity: 1; transform: scale(1); }
+            from { opacity: 0; transform: scale(0.85) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .modal h2 {
-            color: var(--gc-accent);
-            font-size: 1.5rem;
+            color: #ffffff;
+            font-size: 1.6rem;
             margin-bottom: 8px;
+            text-shadow: 0 0 10px var(--glow-green);
         }
 
         .modal p {
@@ -254,14 +310,15 @@
         }
 
         .code-container {
-            background-color: rgba(8, 28, 21, 0.8);
-            border: 2px dashed var(--gc-light-green);
-            padding: 10px 14px;
-            margin: 18px 0;
-            border-radius: 8px;
+            background-color: rgba(4, 14, 10, 0.9);
+            border: 1px dashed var(--gc-accent);
+            padding: 12px 16px;
+            margin: 20px 0;
+            border-radius: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
         }
 
         #final-code {
@@ -269,40 +326,51 @@
             font-size: 1.15rem;
             font-weight: bold;
             color: #ffffff;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
         }
 
+        /* Botón Copiar con Glow */
         .copy-btn {
-            background-color: var(--gc-green);
+            background: linear-gradient(135deg, var(--gc-green) 0%, #015c2c 100%);
             color: var(--white);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
+            border: 1px solid var(--gc-light-green);
+            padding: 8px 14px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
             font-size: 0.85rem;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
         }
 
         .copy-btn:hover {
-            background-color: var(--gc-light-green);
+            background: var(--gc-light-green);
+            color: #040e0a;
+            box-shadow: 0 0 12px var(--glow-green);
         }
 
+        /* Botón Certitude con Destello */
         .certitude-btn {
             display: inline-block;
             width: 100%;
-            background-color: #007bff;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
             color: var(--white);
             text-decoration: none;
-            padding: 12px 0;
+            padding: 13px 0;
             border-radius: 25px;
             font-weight: bold;
             font-size: 0.95rem;
-            transition: background-color 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .certitude-btn:hover {
-            background-color: #0056b3;
+            background: linear-gradient(135deg, #1a8cff 0%, #0066cc 100%);
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.7);
+            transform: translateY(-2px);
         }
 
         @media (max-width: 360px) {
@@ -349,10 +417,14 @@
         
         <div id="game-board"></div>
 
-        <!-- FIRMA REAJUSTADA (1/3) -->
+        <!-- FIRMA CON ENLACES -->
         <footer class="footer-signature">
-            <div class="sig-left">GeoPaterna</div>
-            <div class="sig-right">fran_giga</div>
+            <div class="sig-left">
+                <a href="https://www.geocaching.com/plan/lists/BMFC2Z7" target="_blank" class="sig-link">GeoPaterna</a>
+            </div>
+            <div class="sig-right">
+                <a href="https://www.geocaching.com/p/?guid=8aa34b6e-769c-42e2-ab66-4163f9a40e13&wid=bc617212-c64f-4373-b188-8d6e9a96b1f2&ds=2" target="_blank" class="sig-link">fran_giga</a>
+            </div>
         </footer>
     </div>
 
@@ -381,7 +453,6 @@
             it: { title: "EL TORO DE OSBORNE", congrats: "Congratulazioni!", msg: "Hai trovato tutte le coppie.", copy: "Copia", copied: "Copiato!", cert: "VAI A CERTITUDE" }
         };
 
-        // Nombres de las imágenes tal cual están guardadas en la raíz del repositorio
         const frontImages = [
             'Alaguait.png',
             'Clocker.jpg',
@@ -424,6 +495,26 @@
             setupBoard();
         }
 
+        function createImageElement(src, altName) {
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = altName;
+            
+            img.onerror = function() {
+                if (img.src.includes('./')) {
+                    img.src = src.replace('./', '');
+                } else {
+                    const fallback = document.createElement('div');
+                    fallback.className = 'img-fallback';
+                    fallback.innerText = altName.replace(/\.(png|jpg|jpeg)/i, '');
+                    if (img.parentNode) {
+                        img.parentNode.replaceChild(fallback, img);
+                    }
+                }
+            };
+            return img;
+        }
+
         function setupBoard() {
             const gameBoard = document.getElementById('game-board');
             gameBoard.innerHTML = '';
@@ -434,20 +525,16 @@
                 card.classList.add('card');
                 card.dataset.image = imgSrc;
 
-                // Cara Trasera (HQ.png)
+                // Cara Trasera
                 const cardBack = document.createElement('div');
                 cardBack.classList.add('card-face', 'card-back');
-                const backImg = document.createElement('img');
-                backImg.src = './' + backImage;
-                backImg.alt = "Trasera";
+                const backImg = createImageElement('./' + backImage, backImage);
                 cardBack.appendChild(backImg);
 
-                // Cara Delantera (Pareja)
+                // Cara Delantera
                 const cardFront = document.createElement('div');
                 cardFront.classList.add('card-face', 'card-front');
-                const frontImg = document.createElement('img');
-                frontImg.src = './' + imgSrc;
-                frontImg.alt = "Carta";
+                const frontImg = createImageElement('./' + imgSrc, imgSrc);
                 cardFront.appendChild(frontImg);
 
                 card.appendChild(cardBack);
