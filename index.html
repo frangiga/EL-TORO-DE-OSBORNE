@@ -68,7 +68,6 @@
             width: 100%;
         }
 
-        /* Botón con efecto de iluminación perimetral */
         .lang-btn {
             position: relative;
             display: flex;
@@ -85,7 +84,6 @@
             overflow: hidden;
         }
 
-        /* Especular suave (destello vertical al pasar el ratón) */
         .lang-btn::before {
             content: '';
             position: absolute;
@@ -190,7 +188,6 @@
             border: 1px solid rgba(82, 183, 136, 0.3);
         }
 
-        /* Trasera con HQ.png */
         .card-back {
             background-color: var(--gc-dark-bg);
         }
@@ -201,7 +198,6 @@
             object-fit: cover;
         }
 
-        /* Frente */
         .card-front {
             transform: rotateY(180deg);
             background-color: #ffffff;
@@ -264,7 +260,7 @@
             text-align: center;
         }
 
-        /* --- VENTANA EMERGENTE (MODAL REFINADO) --- */
+        /* --- VENTANA EMERGENTE (MODAL) --- */
         .modal {
             display: none;
             position: fixed;
@@ -330,7 +326,6 @@
             text-shadow: 0 0 5px rgba(255,255,255,0.5);
         }
 
-        /* Botón Copiar con Glow */
         .copy-btn {
             background: linear-gradient(135deg, var(--gc-green) 0%, #015c2c 100%);
             color: var(--white);
@@ -350,7 +345,6 @@
             box-shadow: 0 0 12px var(--glow-green);
         }
 
-        /* Botón Certitude con Destello */
         .certitude-btn {
             display: inline-block;
             width: 100%;
@@ -444,6 +438,84 @@
     </div>
 
     <script>
+        /* --- SISTEMA DE SONIDOS CON WEB AUDIO API --- */
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playFlipSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.08);
+        }
+
+        function playMatchSound() {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, now); // C5
+            osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.3);
+        }
+
+        function playMismatchSound() {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(180, now);
+            osc.frequency.linearRampToValueAtTime(130, now + 0.2);
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.2);
+        }
+
+        function playWinSound() {
+            if (!audioCtx) return;
+            const notes = [261.63, 329.63, 392.00, 523.25, 659.25]; // C4, E4, G4, C5, E5
+            const now = audioCtx.currentTime;
+            notes.forEach((freq, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.2, now + idx * 0.1);
+                gain.gain.linearRampToValueAtTime(0.01, now + idx * 0.1 + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now + idx * 0.1);
+                osc.stop(now + idx * 0.1 + 0.3);
+            });
+        }
+
+        /* --- LÓGICA DEL JUEGO --- */
         const translations = {
             es: { title: "EL TORO DE OSBORNE", congrats: "¡Enhorabuena!", msg: "Has resuelto el juego.", copy: "Copiar", copied: "¡Copiado!", cert: "IR A CERTITUDE" },
             en: { title: "EL TORO DE OSBORNE", congrats: "Congratulations!", msg: "You found all the pairs.", copy: "Copy", copied: "Copied!", cert: "GO TO CERTITUDE" },
@@ -482,6 +554,7 @@
         }
 
         function startGame(lang) {
+            initAudio(); // Inicializa el motor de audio con la primera interacción del usuario
             currentLang = lang;
             document.getElementById('language-selector').style.display = 'none';
             document.getElementById('game-container').style.display = 'flex';
@@ -549,6 +622,7 @@
             if (lockBoard) return;
             if (this === firstCard) return;
 
+            playFlipSound();
             this.classList.add('flip');
 
             if (!hasFlippedCard) {
@@ -567,6 +641,7 @@
         }
 
         function disableCards() {
+            playMatchSound();
             firstCard.removeEventListener('click', flipCard);
             secondCard.removeEventListener('click', flipCard);
             matchedPairs++;
@@ -574,6 +649,7 @@
 
             if (matchedPairs === frontImages.length) {
                 setTimeout(() => {
+                    playWinSound();
                     document.getElementById('end-modal').style.display = 'flex';
                 }, 500);
             }
@@ -581,6 +657,7 @@
 
         function unflipCards() {
             lockBoard = true;
+            playMismatchSound();
             setTimeout(() => {
                 firstCard.classList.remove('flip');
                 secondCard.classList.remove('flip');
@@ -594,6 +671,7 @@
         }
 
         function copyCode() {
+            playFlipSound();
             const codeText = document.getElementById('final-code').innerText;
             const btn = document.getElementById('copy-button');
             
