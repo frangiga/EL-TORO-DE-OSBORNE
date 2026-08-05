@@ -453,12 +453,10 @@
         <div class="modal-content">
             <h2 id="modal-congrats">¡Enhorabuena!</h2>
             <p id="modal-message">Has encontrado todas las parejas.</p>
-            
             <div class="code-container">
                 <span id="final-code">REVIEWERS-TNKS</span>
                 <button class="copy-btn" id="copy-button" onclick="copyCode()">Copiar</button>
             </div>
-
             <a href="https://www.certitudes.org/certitude?wp=GCBVTBN" target="_blank" class="certitude-btn" id="certitude-link">IR A CERTITUDE</a>
             <a href="https://drive.google.com/file/d/1snRpXGoZUuYT_lplhHsiY7G8PmqpwbhP/view?usp=sharing" target="_blank" class="spoiler-btn" id="spoiler-link">FOTO SPOILER</a>
         </div>
@@ -552,17 +550,8 @@
             it: { title: "EL TORO DE OSBORNE", congrats: "Congratulazioni!", msg: "Hai trovato tutte le coppie.", copy: "Copia", copied: "Copiato!", cert: "VAI A CERTITUDE", spoiler: "FOTO SPOILER" }
         };
 
-        const frontImages = [
-            'Alaguait.png',
-            'Clocker.jpg',
-            'Gandaldore.jpg',
-            'GeoawareEs.jpg',
-            'Orus.png',
-            'Pegmatita.jpg',
-            'Salmoon.jpg',
-            'Sispoglo.jpg'
-        ];
-
+        /* --- LISTA DE IMÁGENES (Mozzetta.jpg reemplaza a Orus.png) --- */
+        const frontImages = ['Alaguait.png','Clocker.jpg','Gandaldore.jpg','GeoawareEs.jpg','Mozzetta.jpg','Pegmatita.jpg','Salmoon.jpg','Sispoglo.jpg'];
         const backImage = 'HQ.png';
 
         let cardData = [...frontImages, ...frontImages];
@@ -585,14 +574,12 @@
             currentLang = lang;
             document.getElementById('language-selector').style.display = 'none';
             document.getElementById('game-container').style.display = 'flex';
-            
             document.getElementById('game-title').innerText = translations[lang].title;
             document.getElementById('modal-congrats').innerText = translations[lang].congrats;
             document.getElementById('modal-message').innerText = translations[lang].msg;
             document.getElementById('copy-button').innerText = translations[lang].copy;
             document.getElementById('certitude-link').innerText = translations[lang].cert;
             document.getElementById('spoiler-link').innerText = translations[lang].spoiler;
-
             setupBoard();
         }
 
@@ -600,7 +587,6 @@
             const img = document.createElement('img');
             img.src = src;
             img.alt = altName;
-            
             img.onerror = function() {
                 if (img.src.includes('./')) {
                     img.src = src.replace('./', '');
@@ -620,7 +606,7 @@
             const gameBoard = document.getElementById('game-board');
             gameBoard.innerHTML = '';
             const shuffledCards = shuffle(cardData);
-            
+
             shuffledCards.forEach(imgSrc => {
                 const card = document.createElement('div');
                 card.classList.add('card');
@@ -686,6 +672,7 @@
         function unflipCards() {
             lockBoard = true;
             playMismatchSound();
+
             setTimeout(() => {
                 firstCard.classList.remove('flip');
                 secondCard.classList.remove('flip');
@@ -702,7 +689,6 @@
             playFlipSound();
             const codeText = document.getElementById('final-code').innerText;
             const btn = document.getElementById('copy-button');
-            
             navigator.clipboard.writeText(codeText).then(() => {
                 btn.innerText = translations[currentLang].copied;
                 btn.style.backgroundColor = 'var(--gc-light-green)';
